@@ -3,119 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Archetype Quiz</title>
+    <title>Developer Persona & AI Tool Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4 py-10">
 
-    <div id="app" class="max-w-2xl w-full bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700 fade-in">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-400 mb-2">Dev Archetype Quiz 💻</h1>
-            <p class="text-gray-400">ค้นหาว่าคุณคือ Developer สายไหนในทีม?</p>
+    <div id="app" class="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 fade-in">
+        <div class="text-center mb-8 border-b border-slate-700 pb-6">
+            <h1 class="text-3xl font-bold text-indigo-400 mb-2">Dev Persona & AI Tool 🚀</h1>
+            <p class="text-slate-400">ค้นหาสไตล์การโค้ดของคุณ พร้อมเลือก AI คู่ใจ</p>
         </div>
 
-        <div id="quiz-container">
-            <h2 id="question-text" class="text-xl font-semibold mb-6">Loading...</h2>
-            <div id="options-container" class="space-y-3">
+        <div id="quiz-container" class="min-h-[300px] flex flex-col justify-center">
+            <div id="part-indicator" class="text-indigo-400 text-sm font-bold mb-2 uppercase tracking-wider"></div>
+            <h2 id="question-text" class="text-xl font-semibold mb-6 leading-relaxed">Loading...</h2>
+            <div id="options-container" class="space-y-3"></div>
+            <div class="mt-8 flex justify-between items-center text-sm text-slate-500">
+                <div class="w-full bg-slate-700 h-2 rounded-full mr-4">
+                    <div id="progress-bar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
-            <div class="mt-6 text-sm text-gray-500 text-right" id="progress-text"></div>
+                <span id="progress-text" class="whitespace-nowrap"></span>
+            </div>
         </div>
 
-        <div id="result-container" class="hidden text-center fade-in">
-            <h2 class="text-2xl font-bold mb-4">ผลลัพธ์ของคุณคือ...</h2>
-            <div id="result-title" class="text-4xl mb-4 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400"></div>
-            <p id="result-desc" class="text-gray-300 text-lg leading-relaxed mb-8"></p>
-            <button onclick="resetQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors w-full md:w-auto">
-                ลองเล่นใหม่อีกครั้ง 🔄
-            </button>
+        <div id="result-container" class="hidden fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-white mb-2">🎉 ผลลัพธ์ของคุณมาแล้ว!</h2>
+                <p class="text-slate-400">นี่คือตัวตนและเครื่องมือที่เหมาะกับคุณที่สุด</p>
+            </div>
+
+            <div class="space-y-6 mb-8">
+                <div class="bg-slate-700/40 p-6 rounded-xl border border-slate-600">
+                    <div class="text-sm text-slate-400 mb-1 uppercase tracking-wider font-semibold">1. สไตล์การทำงานของคุณ</div>
+                    <div id="archetype-title" class="text-2xl font-bold mb-3"></div>
+                    <p id="archetype-desc" class="text-slate-300 leading-relaxed"></p>
+                </div>
+
+                <div class="bg-indigo-900/20 p-6 rounded-xl border border-indigo-500/30">
+                    <div class="text-sm text-indigo-300 mb-1 uppercase tracking-wider font-semibold">2. เครื่องมือที่แนะนำ</div>
+                    <div id="tool-title" class="text-2xl font-bold mb-3"></div>
+                    <p id="tool-desc" class="text-slate-300 leading-relaxed"></p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <button onclick="copyResult()" id="copy-btn" class="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
+                    📋 Copy
+                </button>
+                <button onclick="shareToLine()" class="bg-[#06C755] hover:bg-[#05b34c] text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
+                    💬 Share to LINE
+                </button>
+                <button onclick="saveToFile()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
+                    💾 Save as .md
+                </button>
+                <button onclick="resetQuiz()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
+                    🔄 เล่นใหม่อีกครั้ง
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
         const quizData = [
-            {
-                question: "1. เมื่อต้องเริ่มโปรเจกต์ใหม่ สิ่งแรกที่คุณมักจะทำคืออะไร?",
-                options: [
-                    { text: "วางภาพรวม Architecture, เลือก DB และวาด Diagram", type: "A" },
-                    { text: "ขึ้นโครง UI/UX หารูปแบบ Component ที่สวยที่สุด", type: "B" },
-                    { text: "ตั้งค่า CI/CD Pipeline และเซ็ต Environment", type: "C" },
-                    { text: "สร้างไฟล์แล้วเริ่มเขียน Core Logic ทันที!", type: "D" }
-                ]
-            },
-            {
-                question: "2. เจอเหตุการณ์ 'โค้ดรันผ่านเฉยเลย แต่ไม่รู้ว่าทำไม' คุณจะทำอย่างไร?",
-                options: [
-                    { text: "ไล่อ่าน Flow ใหม่ทั้งหมดจนกว่าจะเข้าใจจริงๆ", type: "A" },
-                    { text: "ถ้าหน้าตาออกมาถูกต้องและกดได้ ก็ถือว่าโอเค", type: "B" },
-                    { text: "เขียน Test Case ดักไว้หลายๆ ชั้นกันเหนียว", type: "C" },
-                    { text: "คอมเมนต์ไว้ว่า '// It works, don't touch this' แล้วไปต่อ", type: "D" }
-                ]
-            },
-            {
-                question: "3. Workspace ในฝันของคุณคือแบบไหน?",
-                options: [
-                    { text: "IDE จัดระเบียบดีๆ มี Design Pattern ชัดเจน", type: "A" },
-                    { text: "จอคู่ จอหนึ่งเปิดโค้ด อีกจอเปิด Live Preview", type: "B" },
-                    { text: "หน้าจอ Terminal สีดำ พิมพ์ Command รัวๆ ไม่ใช้เมาส์", type: "C" },
-                    { text: "อะไรก็ได้ที่พิมพ์เร็วที่สุด ขอแค่มี Stack Overflow", type: "D" }
-                ]
-            },
-            {
-                question: "4. เมื่อเกิดเหตุ 'ระบบพังบน Production' คุณจะทำอะไรเป็นอย่างแรก?",
-                options: [
-                    { text: "เปิดดู Log อย่างใจเย็นเพื่อหา Root Cause", type: "A" },
-                    { text: "ลองเคลียร์ Cache หรือ Inspect ดูว่าพังที่หน้าบ้านไหม", type: "B" },
-                    { text: "กด Rollback กลับไปเวอร์ชันก่อนหน้าทันที", type: "C" },
-                    { text: "SSH เข้าไปแก้โค้ดสดๆ บน Production (Hotfix!)", type: "D" }
-                ]
-            }
+            // --- Part 1: Archetype ---
+            { part: "Part 1: สไตล์การทำงาน", question: "1. เมื่อต้องเริ่มโปรเจกต์ใหม่ สิ่งแรกที่คุณมักจะทำคืออะไร?", type: "archetype", options: [{ text: "วางภาพรวม Architecture, เลือก DB และวาด Diagram ให้ชัดเจน", val: "A" }, { text: "ขึ้นโครง UI/UX หารูปแบบ Component ที่สวยและตอบโจทย์ที่สุด", val: "B" }, { text: "ตั้งค่า CI/CD Pipeline และเซ็ต Environment ให้พร้อมรัน", val: "C" }, { text: "เปิด Editor สร้างไฟล์แล้วเริ่มเขียน Core Logic ทันที!", val: "D" }] },
+            { part: "Part 1: สไตล์การทำงาน", question: "2. เจอเหตุการณ์ 'โค้ดรันผ่านเฉยเลย แต่ไม่รู้ว่าทำไม' คุณจะจัดการอย่างไร?", type: "archetype", options: [{ text: "ไล่อ่าน Flow ใหม่ทั้งหมดจนกว่าจะเข้าใจหลักการจริงๆ", val: "A" }, { text: "ถ้าหน้าตาออกมาถูกต้องและกดใช้งานได้ปกติ ก็ถือว่าโอเค", val: "B" }, { text: "เขียน Test Case ดักไว้หลายๆ ชั้นกันเหนียว", val: "C" }, { text: "คอมเมนต์แปะไว้ว่า '// It works, don't touch this' แล้วไปต่อ", val: "D" }] },
+            { part: "Part 1: สไตล์การทำงาน", question: "3. สภาพแวดล้อม (Workspace) ในฝันของคุณคือแบบไหน?", type: "archetype", options: [{ text: "IDE จัดระเบียบมาอย่างดี มีปลั๊กอินเฉพาะที่จำเป็น และโค้ดตาม Pattern", val: "A" }, { text: "จอคู่ จอหนึ่งเปิดโค้ด อีกจอเปิด Live Preview ดูกราฟิกเรียลไทม์", val: "B" }, { text: "หน้าจอ Terminal สีดำๆ พิมพ์ Command รัวๆ ไม่ค่อยใช้เมาส์", val: "C" }, { text: "อะไรก็ได้ที่พิมพ์โค้ดได้เร็วที่สุด ขอแค่มี Stack Overflow หรือ AI ให้ถาม", val: "D" }] },
+            { part: "Part 1: สไตล์การทำงาน", question: "4. เมื่อเกิดเหตุ 'ระบบพังบน Production' คุณจะทำอะไรเป็นอย่างแรก?", type: "archetype", options: [{ text: "ค่อยๆ เปิดดู Log อย่างใจเย็นเพื่อหาสาเหตุที่แท้จริง", val: "A" }, { text: "ลองเคลียร์ Cache หรือ Inspect ดูว่าพังที่หน้าบ้านไหม", val: "B" }, { text: "กด Rollback กลับไปเวอร์ชันก่อนหน้าทันที เพื่อให้ระบบออนแอร์ได้ก่อน", val: "C" }, { text: "SSH เข้าไปแก้โค้ดสดๆ บน Production (Hotfix แบบ YOLO!)", val: "D" }] },
+            // --- Part 2: Tool Selector ---
+            { part: "Part 2: เลือกเครื่องมือ AI", question: "5. ลักษณะโปรเจกต์ที่คุณกำลังจะทำในตอนนี้เป็นแบบไหน?", type: "tool", options: [{ text: "โปรเจกต์เดิมที่มีอยู่แล้ว โค้ดซับซ้อน หรือต้องแก้ Architecture ลึกๆ", val: "Claude" }, { text: "โปรเจกต์ขึ้นใหม่จากศูนย์ (Greenfield) หรือทำ POC พิสูจน์ไอเดีย", val: "AntiG" }] },
+            { part: "Part 2: เลือกเครื่องมือ AI", question: "6. คุณอยากให้ AI ทำงานร่วมกับคุณในสไตล์ไหน?", type: "tool", options: [{ text: "Pair Programming: ฉันคุมเอง AI เป็นผู้ช่วยเขียนโค้ดและรันคำสั่งทีละสเต็ป", val: "Claude" }, { text: "Delegation: สั่งงานเป็นก้อนใหญ่ ปล่อยให้ AI ไปรันเทสเองแล้วฉันค่อยรีวิวทีเดียว", val: "AntiG" }] },
+            { part: "Part 2: เลือกเครื่องมือ AI", question: "7. เรื่องการรันทดสอบหน้า UI (Frontend) คุณจัดการอย่างไร?", type: "tool", options: [{ text: "ฉันเปิดบราวเซอร์ ดูผลลัพธ์ และเทสการคลิกต่างๆ ด้วยตัวเอง", val: "Claude" }, { text: "อยากให้ AI เปิด Chrome ขึ้นมาคลิกเทส UI แล้วแคปรูปมาส่งงานให้ดูเลย", val: "AntiG" }] },
+            { part: "Part 2: เลือกเครื่องมือ AI", question: "8. เวลาเจอบั๊กที่แก้ไม่ตก คุณอยากให้ AI เข้ามาช่วยแบบไหน?", type: "tool", options: [{ text: "ช่วยวิเคราะห์ Log อธิบายสาเหตุ แล้วไกด์ว่าฉันควรไปแก้ไฟล์ไหน", val: "Claude" }, { text: "โยน Error ให้ AI ไปลองแก้ไฟล์และรันเทสซ้ำๆ อัตโนมัติจนกว่ามันจะผ่าน", val: "AntiG" }] },
+            { part: "Part 2: เลือกเครื่องมือ AI", question: "9. เรื่องสภาพแวดล้อมและ Workflow การทำงาน?", type: "tool", options: [{ text: "ฉันหวงการตั้งค่า VS Code เดิมมาก อยากใช้ Extension และ Theme เดิมเป๊ะๆ", val: "Claude" }, { text: "พร้อมเปิดใจใช้ IDE ตัวใหม่ ลองใช้ Agent Manager หน้าต่างใหม่ๆ ได้", val: "AntiG" }] }
         ];
 
-        const resultsData = {
+        const archetypeResults = {
             "A": { title: "The Architect 🥇", desc: "สายโครงสร้างผู้ศรัทธาใน Architecture! คุณคือเสาหลักของทีมที่มองการณ์ไกล โค้ดของคุณสะอาด อ่านง่าย และสเกลได้ดีในระยะยาว" },
-            "B": { title: "The Pixel Perfect 🎨", desc: "สายหน้าบ้าน ศิลปินผู้สร้างประสบการณ์! คุณใส่ใจรายละเอียด ทำให้แอปออกมาน่าใช้ โค้ดของคุณคือศิลปะที่สื่อสารกับผู้ใช้โดยตรง" },
-            "C": { title: "The Infra Master ⚙️", desc: "สายหลังบ้าน เทพแห่งระบบ Automation! คุณคือผู้พิทักษ์ความเสถียร อะไรที่ทำซ้ำคุณจับ Automate หมด ช่วยชีวิตทีมไว้เสมอ" },
-            "D": { title: "The Hacker 🚀", desc: "สายลุย เน้นเสร็จไวใช้งานได้จริง! คุณคือนินจาของทีม แก้ปัญหาเฉพาะหน้าเก่ง ไม่ยึดติดทฤษฎี ขอแค่ผลลัพธ์เวิร์กและส่งทันเดดไลน์!" }
+            "B": { title: "The Pixel Perfect 🎨", desc: "สายหน้าบ้าน ศิลปินผู้สร้างประสบการณ์! คุณใส่ใจรายละเอียด ทำให้แอปออกมาน่าใช้ โค้ดของคุณคือศิลปะที่สื่อสารกับผู้ใช้" },
+            "C": { title: "The Infra Master ⚙️", desc: "สายหลังบ้าน เทพแห่ง Automation! คุณคือผู้พิทักษ์ความเสถียร อะไรทำซ้ำคุณจับ Automate หมด ช่วยชีวิตทีมไว้เสมอ" },
+            "D": { title: "The Hacker 🚀", desc: "สายลุย เน้นเสร็จไวใช้งานได้จริง! คุณแก้ปัญหาเฉพาะหน้าเก่ง ไม่ยึดติดทฤษฎี ขอแค่ผลลัพธ์เวิร์กและส่งทันเดดไลน์" }
+        };
+
+        const toolResults = {
+            "Claude": { title: "VS Code + Claude Code 💻", style: "text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400", desc: "คุณต้องการความเป๊ะและสิทธิขาดในการควบคุม Codebase ทั้งหมด เหมาะกับการแก้ระบบที่ซับซ้อน งานที่ต้องการความปลอดภัยสูง และอยากคง Workflow เดิมไว้" },
+            "AntiG": { title: "Google Antigravity 🌌", style: "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400", desc: "คุณกำลังเน้นสปีด! ปล่อยให้ AI เป็นพนักงานดูแลตั้งแต่ขึ้นโครง เขียนโค้ด ไปจนถึงรันเทสบนบราวเซอร์อัตโนมัติ เหมาะมากกับการปั่นโปรเจกต์ใหม่และลดภาระ" },
+            "Tie": { title: "เลือกยาก... ลอง Claude Code ก่อน! ⚖️", style: "text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400", desc: "งานคุณอยู่กึ่งกลาง! แนะนำเริ่มที่ VS Code + Claude Code เพื่อความชัวร์ก่อน ถ้าอยากให้ AI ช่วยไล่เทส UI ค่อยสลับไปลองเปิด Antigravity" }
         };
 
         let currentQuestionIndex = 0;
-        let scores = { A: 0, B: 0, C: 0, D: 0 };
-
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const progressText = document.getElementById('progress-text');
-        const quizContainer = document.getElementById('quiz-container');
-        const resultContainer = document.getElementById('result-container');
+        let scores = { A: 0, B: 0, C: 0, D: 0, Claude: 0, AntiG: 0 };
+        let finalArchetypeKey = '';
+        let finalToolKey = '';
 
         function loadQuestion() {
             const currentQ = quizData[currentQuestionIndex];
-            questionText.innerText = currentQ.question;
+            document.getElementById('part-indicator').innerText = currentQ.part;
+            document.getElementById('question-text').innerText = currentQ.question;
+            const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
             
-            currentQ.options.forEach(option => {
+            const shuffledOptions = [...currentQ.options].sort(() => Math.random() - 0.5);
+            shuffledOptions.forEach(option => {
                 const button = document.createElement('button');
-                button.className = "w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg border border-gray-600 hover:border-blue-400 transition-all duration-200 text-gray-200";
+                button.className = "w-full text-left p-4 bg-slate-700/50 hover:bg-slate-600 rounded-xl border border-slate-600 hover:border-indigo-400 transition-all duration-200 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500";
                 button.innerText = option.text;
-                button.onclick = () => selectOption(option.type);
+                button.onclick = () => selectOption(option.val);
                 optionsContainer.appendChild(button);
             });
 
-            progressText.innerText = `ข้อ ${currentQuestionIndex + 1} จาก ${quizData.length}`;
+            const progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+            document.getElementById('progress-text').innerText = `${currentQuestionIndex + 1} / ${quizData.length}`;
         }
 
-        function selectOption(type) {
-            scores[type]++;
+        function selectOption(val) {
+            scores[val]++;
             currentQuestionIndex++;
-
+            const quizContainer = document.getElementById('quiz-container');
+            
             if (currentQuestionIndex < quizData.length) {
-                // Add tiny fade effect
                 quizContainer.classList.remove('fade-in');
-                void quizContainer.offsetWidth; // trigger reflow
+                void quizContainer.offsetWidth; 
                 quizContainer.classList.add('fade-in');
                 loadQuestion();
             } else {
@@ -124,32 +145,90 @@
         }
 
         function showResult() {
-            quizContainer.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-container').classList.remove('hidden');
 
-            // Find max score
-            let maxScore = 0;
-            let finalType = 'A';
-            for (const type in scores) {
-                if (scores[type] > maxScore) {
-                    maxScore = scores[type];
-                    finalType = type;
+            let maxArchScore = 0;
+            ['A', 'B', 'C', 'D'].forEach(key => {
+                if (scores[key] > maxArchScore) {
+                    maxArchScore = scores[key];
+                    finalArchetypeKey = key;
                 }
-            }
+            });
+            if(!finalArchetypeKey) finalArchetypeKey = 'A'; 
 
-            document.getElementById('result-title').innerText = resultsData[finalType].title;
-            document.getElementById('result-desc').innerText = resultsData[finalType].desc;
+            if (scores.Claude > scores.AntiG) finalToolKey = 'Claude';
+            else if (scores.AntiG > scores.Claude) finalToolKey = 'AntiG';
+            else finalToolKey = 'Tie';
+
+            const arch = archetypeResults[finalArchetypeKey];
+            document.getElementById('archetype-title').innerHTML = `<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">${arch.title}</span>`;
+            document.getElementById('archetype-desc').innerText = arch.desc;
+
+            const tool = toolResults[finalToolKey];
+            document.getElementById('tool-title').innerHTML = `<span class="${tool.style}">${tool.title}</span>`;
+            document.getElementById('tool-desc').innerText = tool.desc;
+        }
+
+        function generateShareText() {
+            const archName = archetypeResults[finalArchetypeKey].title;
+            const toolName = toolResults[finalToolKey].title.replace(/<[^>]*>?/gm, ''); 
+            // อย่าลืมเปลี่ยนตรง [YOUR_GITHUB_PAGES_LINK] เป็นลิงก์จริงของคุณนะครับ
+            return `💻 ฉันคือ: **${archName}**\n🛠️ AI Tool ที่เหมาะกับโปรเจกต์ฉันตอนนี้: **${toolName}**\n\nลองมาค้นหาสไตล์ของคุณดูสิ: [YOUR_GITHUB_PAGES_LINK]`;
+        }
+
+        function copyResult() {
+            navigator.clipboard.writeText(generateShareText()).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '✅ ก๊อปปี้แล้ว!';
+                btn.classList.replace('bg-slate-600', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-slate-500', 'hover:bg-emerald-700');
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.classList.replace('bg-emerald-600', 'bg-slate-600');
+                    btn.classList.replace('hover:bg-emerald-700', 'hover:bg-slate-500');
+                }, 2000);
+            });
+        }
+
+        function shareToLine() {
+            const text = encodeURIComponent(generateShareText());
+            const lineUrl = `https://line.me/R/msg/text/?${text}`;
+            window.open(lineUrl, '_blank');
+        }
+
+        function saveToFile() {
+            const archName = archetypeResults[finalArchetypeKey].title;
+            const archDesc = archetypeResults[finalArchetypeKey].desc;
+            const toolName = toolResults[finalToolKey].title.replace(/<[^>]*>?/gm, '');
+            const toolDesc = toolResults[finalToolKey].desc;
+            
+            const markdownContent = `# My Dev Persona Results\n\n## 1. สไตล์การทำงาน: ${archName}\n${archDesc}\n\n## 2. เครื่องมือที่แนะนำ: ${toolName}\n${toolDesc}\n\n---\n*Generated by AI Tool Selector*`;
+            
+            const blob = new Blob([markdownContent], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `my-dev-persona-${Date.now()}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function resetQuiz() {
             currentQuestionIndex = 0;
-            scores = { A: 0, B: 0, C: 0, D: 0 };
-            resultContainer.classList.add('hidden');
+            scores = { A: 0, B: 0, C: 0, D: 0, Claude: 0, AntiG: 0 };
+            document.getElementById('result-container').classList.add('hidden');
+            const quizContainer = document.getElementById('quiz-container');
             quizContainer.classList.remove('hidden');
+            quizContainer.classList.remove('fade-in');
+            void quizContainer.offsetWidth;
+            quizContainer.classList.add('fade-in');
             loadQuestion();
         }
 
-        // Initialize
         loadQuestion();
     </script>
 </body>
