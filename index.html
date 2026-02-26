@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Archetype Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="max-w-2xl w-full bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700 fade-in">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-400 mb-2">Dev Archetype Quiz 💻</h1>
+            <p class="text-gray-400">ค้นหาว่าคุณคือ Developer สายไหนในทีม?</p>
+        </div>
+
+        <div id="quiz-container">
+            <h2 id="question-text" class="text-xl font-semibold mb-6">Loading...</h2>
+            <div id="options-container" class="space-y-3">
+                </div>
+            <div class="mt-6 text-sm text-gray-500 text-right" id="progress-text"></div>
+        </div>
+
+        <div id="result-container" class="hidden text-center fade-in">
+            <h2 class="text-2xl font-bold mb-4">ผลลัพธ์ของคุณคือ...</h2>
+            <div id="result-title" class="text-4xl mb-4 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400"></div>
+            <p id="result-desc" class="text-gray-300 text-lg leading-relaxed mb-8"></p>
+            <button onclick="resetQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors w-full md:w-auto">
+                ลองเล่นใหม่อีกครั้ง 🔄
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "1. เมื่อต้องเริ่มโปรเจกต์ใหม่ สิ่งแรกที่คุณมักจะทำคืออะไร?",
+                options: [
+                    { text: "วางภาพรวม Architecture, เลือก DB และวาด Diagram", type: "A" },
+                    { text: "ขึ้นโครง UI/UX หารูปแบบ Component ที่สวยที่สุด", type: "B" },
+                    { text: "ตั้งค่า CI/CD Pipeline และเซ็ต Environment", type: "C" },
+                    { text: "สร้างไฟล์แล้วเริ่มเขียน Core Logic ทันที!", type: "D" }
+                ]
+            },
+            {
+                question: "2. เจอเหตุการณ์ 'โค้ดรันผ่านเฉยเลย แต่ไม่รู้ว่าทำไม' คุณจะทำอย่างไร?",
+                options: [
+                    { text: "ไล่อ่าน Flow ใหม่ทั้งหมดจนกว่าจะเข้าใจจริงๆ", type: "A" },
+                    { text: "ถ้าหน้าตาออกมาถูกต้องและกดได้ ก็ถือว่าโอเค", type: "B" },
+                    { text: "เขียน Test Case ดักไว้หลายๆ ชั้นกันเหนียว", type: "C" },
+                    { text: "คอมเมนต์ไว้ว่า '// It works, don't touch this' แล้วไปต่อ", type: "D" }
+                ]
+            },
+            {
+                question: "3. Workspace ในฝันของคุณคือแบบไหน?",
+                options: [
+                    { text: "IDE จัดระเบียบดีๆ มี Design Pattern ชัดเจน", type: "A" },
+                    { text: "จอคู่ จอหนึ่งเปิดโค้ด อีกจอเปิด Live Preview", type: "B" },
+                    { text: "หน้าจอ Terminal สีดำ พิมพ์ Command รัวๆ ไม่ใช้เมาส์", type: "C" },
+                    { text: "อะไรก็ได้ที่พิมพ์เร็วที่สุด ขอแค่มี Stack Overflow", type: "D" }
+                ]
+            },
+            {
+                question: "4. เมื่อเกิดเหตุ 'ระบบพังบน Production' คุณจะทำอะไรเป็นอย่างแรก?",
+                options: [
+                    { text: "เปิดดู Log อย่างใจเย็นเพื่อหา Root Cause", type: "A" },
+                    { text: "ลองเคลียร์ Cache หรือ Inspect ดูว่าพังที่หน้าบ้านไหม", type: "B" },
+                    { text: "กด Rollback กลับไปเวอร์ชันก่อนหน้าทันที", type: "C" },
+                    { text: "SSH เข้าไปแก้โค้ดสดๆ บน Production (Hotfix!)", type: "D" }
+                ]
+            }
+        ];
+
+        const resultsData = {
+            "A": { title: "The Architect 🥇", desc: "สายโครงสร้างผู้ศรัทธาใน Architecture! คุณคือเสาหลักของทีมที่มองการณ์ไกล โค้ดของคุณสะอาด อ่านง่าย และสเกลได้ดีในระยะยาว" },
+            "B": { title: "The Pixel Perfect 🎨", desc: "สายหน้าบ้าน ศิลปินผู้สร้างประสบการณ์! คุณใส่ใจรายละเอียด ทำให้แอปออกมาน่าใช้ โค้ดของคุณคือศิลปะที่สื่อสารกับผู้ใช้โดยตรง" },
+            "C": { title: "The Infra Master ⚙️", desc: "สายหลังบ้าน เทพแห่งระบบ Automation! คุณคือผู้พิทักษ์ความเสถียร อะไรที่ทำซ้ำคุณจับ Automate หมด ช่วยชีวิตทีมไว้เสมอ" },
+            "D": { title: "The Hacker 🚀", desc: "สายลุย เน้นเสร็จไวใช้งานได้จริง! คุณคือนินจาของทีม แก้ปัญหาเฉพาะหน้าเก่ง ไม่ยึดติดทฤษฎี ขอแค่ผลลัพธ์เวิร์กและส่งทันเดดไลน์!" }
+        };
+
+        let currentQuestionIndex = 0;
+        let scores = { A: 0, B: 0, C: 0, D: 0 };
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressText = document.getElementById('progress-text');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultContainer = document.getElementById('result-container');
+
+        function loadQuestion() {
+            const currentQ = quizData[currentQuestionIndex];
+            questionText.innerText = currentQ.question;
+            optionsContainer.innerHTML = '';
+            
+            currentQ.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = "w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg border border-gray-600 hover:border-blue-400 transition-all duration-200 text-gray-200";
+                button.innerText = option.text;
+                button.onclick = () => selectOption(option.type);
+                optionsContainer.appendChild(button);
+            });
+
+            progressText.innerText = `ข้อ ${currentQuestionIndex + 1} จาก ${quizData.length}`;
+        }
+
+        function selectOption(type) {
+            scores[type]++;
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < quizData.length) {
+                // Add tiny fade effect
+                quizContainer.classList.remove('fade-in');
+                void quizContainer.offsetWidth; // trigger reflow
+                quizContainer.classList.add('fade-in');
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+
+            // Find max score
+            let maxScore = 0;
+            let finalType = 'A';
+            for (const type in scores) {
+                if (scores[type] > maxScore) {
+                    maxScore = scores[type];
+                    finalType = type;
+                }
+            }
+
+            document.getElementById('result-title').innerText = resultsData[finalType].title;
+            document.getElementById('result-desc').innerText = resultsData[finalType].desc;
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            scores = { A: 0, B: 0, C: 0, D: 0 };
+            resultContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        // Initialize
+        loadQuestion();
+    </script>
+</body>
+</html>
